@@ -27,12 +27,11 @@ JOIN_REQUEST: Owner in string
 CLIENT_EXIT_REQUEST, PING_REQUEST, PING_RESPONSE: None
 SERVER_EXIT_REQUEST: Who left the server in string
 JOIN_NOTIF: Who joined the server in string
-CMD_MESSAGE: Owner in string, MESSAGE_DELIMITER byte, Message in string
+MESSAGE: Message in string
 
 Useage of the commands:
 
 JOIN_REQUEST: Sent by client to server to notify a user join
-EXIT_REQUEST: Sent by client to server to notify a user exit
 JOIN_NOTIF: Sent by server to notify clients that someone has joined the server
 EXIT_NOTIF: Sent by server to notify clients that someone has left the server
 PING: Sent by server to check if clients are still online
@@ -40,7 +39,7 @@ PING_RESPONSE: Sent by client to respond to a server ping
 
 MESSAGE: Sent by clients to send a message to the server, which then
 the server will broadcast back to every client and when the clients recieve
-said request, they will display the message sebt
+said request, they will display the message sent
 */
 
 type commandID byte
@@ -55,7 +54,6 @@ const (
 const (
 	CMD_JOIN_REQUEST commandID = iota
 	CMD_JOIN_NOTIF
-	CMD_EXIT_REQUEST
 	CMD_EXIT_NOTIF
 	CMD_PING
 	CMD_PING_RESPONSE
