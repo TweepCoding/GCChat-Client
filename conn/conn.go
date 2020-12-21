@@ -1,7 +1,7 @@
 package conn
 
 import (
-	"bufio"
+	"github.com/gotk3/gotk3/gtk"
 	"log"
 	"net"
 
@@ -25,6 +25,8 @@ func Connect(window *ui.MainWindow) error {
 
 	err = SendCommand(conn, CMD_JOIN_REQUEST, []byte(window.Username))
 
+	err = SendCommand(conn, CMD_PING_RESPONSE, []byte{})
+
 	p := window.Chat.Input.Entry
 
 	p.Connect("activate", func() {
@@ -38,23 +40,33 @@ func Connect(window *ui.MainWindow) error {
 
 func listen(conn net.Conn, window *ui.MainWindow) {
 
-	scanner := bufio.NewScanner(conn)
+	defer func() {
+		conn.Close()
+		gtk.MainQuit()
+	}()
 
-	for scanner.Scan() {
-		c := RetrieveCommand(conn)
-		var err error
-		switch c.id {
-		case CMD_JOIN_NOTIF:
-			window.Status.AddMember(string(c.data))
-		case CMD_EXIT_NOTIF:
-			window.Status.RemoveMember(string(c.data))
-		case CMD_MESSAGE:
-			err = window.Chat.Area.SendMessage(BytesToOwnerMessage(c.data))
-		case CMD_PING:
-			err = SendCommand(conn, CMD_PING_RESPONSE, []byte{})
+	for {
+		commands, ok := RetrieveCommands(conn)
+
+		if !ok {
+			break
 		}
-		if err != nil {
-			log.Fatalln("Error while recieving external command: " + err.Error())
+
+		var err error
+		for _, c := range(commands) {
+			switch c.id {
+			case CMD_JOIN_NOTIF:
+				window.Status.AddMember(string(c.data))
+			case CMD_EXIT_NOTIF:
+				window.Status.RemoveMember(string(c.data))
+			case CMD_MESSAGE:
+				err = window.Chat.Area.SendMessage(BytesToOwnerMessage(c.data))
+			case CMD_PING:
+				err = SendCommand(conn, CMD_PING_RESPONSE, []byte{})
+			}
+			if err != nil {
+				log.Fatalln("Error while recieving external command: " + err.Error())
+			}
 		}
 	}
 

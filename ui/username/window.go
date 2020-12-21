@@ -1,6 +1,7 @@
 package username
 
 import (
+	"log"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/client/ui"
 	"github.com/client/conn"
@@ -34,10 +35,13 @@ func UsernameWindowNew() *gtk.Window {
 	})
 
 	b.Connect("clicked", func() {
-		w.Destroy()
 		t, _ := e.GetText()
+		w.Destroy()
 		m := ui.MainWindowNew(t)
-		conn.Connect(m)
+		err := conn.Connect(m)
+		if err != nil {
+			log.Fatalln("Error connecting to server: " + err.Error())
+		}
 		m.ShowAll()
 	})
 

@@ -1,9 +1,12 @@
 package conn
 
 import (
+	"strconv"
+	"io"
 	"bufio"
-	"net"
+	"log"
 	"bytes"
+	"net"
 )
 
 /*
@@ -47,8 +50,8 @@ type commandID byte
 var verify []byte = []byte("XCHAT")
 
 const (
-	DELIMITER byte = 0xFF
 	MESSAGE_DELIMITER byte = 0xF9
+	EOC byte = 0xFF
 )
 
 const (
@@ -66,26 +69,76 @@ type command struct {
 }
 
 func SendCommand(conn net.Conn, id commandID, data []byte) error {
-	writer := bufio.NewWriter(conn)
-	var err error
-	if len(data) != 0 {
-		_, err = writer.Write(append(append(append(verify, byte(id)), data...), DELIMITER))
+
+	_, err := conn.Write(append(append(append(verify, byte(id)), data...), EOC))
+
+	if id == CMD_PING {
+		log.Println("Sent a ping")
+	} else if id == CMD_PING_RESPONSE {
+		log.Println("Sent a ping response")
 	} else {
-		_, err = writer.Write(append(append(verify, byte(id)), DELIMITER))
+		log.Println("Sent command with id: " + id.ToString() + " with data: " + string(data))
 	}
+
 	return err
 }
 
-func RetrieveCommand(conn net.Conn) (command) {
-	reader := bufio.NewReader(conn)
-	comm, err := reader.ReadBytes(DELIMITER)
+func RetrieveCommands(conn net.Conn) ([]command, bool) {
 
-	if err != nil || !bytes.Equal(comm[:len(verify)], verify){
-		panic("Error at retrieving command: " + err.Error())
+	commands := []command{}
+
+	reader := bufio.NewReader(conn)
+
+	log.Println("Reading...")
+
+	for left := true; left; left = reader.Buffered() != 0 {
+		comm, err := reader.ReadBytes(EOC)
+
+		if err == io.EOF {
+			return []command{}, false
+		}
+
+		if len(comm) != len(verify) {
+			log.Println("Read " + strconv.Itoa(len(comm)) + " bytes")
+		}
+
+		comm = comm[:len(comm)-1]
+		id := commandID(comm[len(verify)])
+
+		if id == CMD_PING {
+			log.Println("Recieved a ping")
+		} else if id == CMD_PING_RESPONSE {
+			log.Println("Recieved a ping response")
+		} else {
+			log.Println("Command was read, with id " + id.ToString() + " and data " + string(comm[len(verify)+1:]))
+		}
+
+		if !bytes.Equal(comm[:len(verify)], verify) {
+			panic("Error at retrieving command: Command is not valid")
+		}
+
+		commands = append(commands, command{id, comm[len(verify)+1:]})
 	}
 
-	return command{commandID(comm[len(verify)]), comm[len(verify)+1:len(comm)-1]}
+	return commands, true
+}
 
+func (c commandID) ToString() string {
+	switch c{
+		case CMD_JOIN_REQUEST:
+			return "CMD_JOIN_REQUEST"
+		case CMD_JOIN_NOTIF:
+			return "CMD_JOIN_NOTIF"
+		case CMD_EXIT_NOTIF:
+			return "CMD_EXIT_NOTIF"
+		case CMD_PING:
+			return "CMD_PING"
+		case CMD_PING_RESPONSE:
+			return "CMD_PING_RESPONSE"
+		case CMD_MESSAGE:
+			return "CMD_MESSAGE"
+	}
+	return "INVALID ID"
 }
 
 func OwnerMessageToBytes(owner string, message string) []byte {
@@ -93,7 +146,7 @@ func OwnerMessageToBytes(owner string, message string) []byte {
 }
 
 func BytesToOwnerMessage(bytes []byte) (string, string) {
-	for i, b := range(bytes) {
+	for i, b := range bytes {
 		if b == MESSAGE_DELIMITER {
 			return string(bytes[:i]), string(bytes[i+1:])
 		}
