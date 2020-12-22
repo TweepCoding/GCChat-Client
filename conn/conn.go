@@ -1,9 +1,10 @@
 package conn
 
 import (
-	"github.com/gotk3/gotk3/gtk"
 	"log"
 	"net"
+
+	"github.com/gotk3/gotk3/gtk"
 
 	"github.com/client/ui"
 )
@@ -53,7 +54,7 @@ func listen(conn net.Conn, window *ui.MainWindow) {
 		}
 
 		var err error
-		for _, c := range(commands) {
+		for _, c := range commands {
 			switch c.id {
 			case CMD_JOIN_NOTIF:
 				window.Status.AddMember(string(c.data))
