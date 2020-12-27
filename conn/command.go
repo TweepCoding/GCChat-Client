@@ -1,12 +1,12 @@
 package conn
 
 import (
-	"strconv"
-	"io"
 	"bufio"
-	"log"
 	"bytes"
+	"io"
+	"log"
 	"net"
+	"strconv"
 )
 
 /*
@@ -47,11 +47,11 @@ said request, they will display the message sent
 
 type commandID byte
 
-var verify []byte = []byte("XCHAT")
+var verify []byte = []byte("GCCHAT")
 
 const (
 	MESSAGE_DELIMITER byte = 0xF9
-	EOC byte = 0xFF
+	EOC               byte = 0xFF
 )
 
 const (
@@ -124,19 +124,19 @@ func RetrieveCommands(conn net.Conn) ([]command, bool) {
 }
 
 func (c commandID) ToString() string {
-	switch c{
-		case CMD_JOIN_REQUEST:
-			return "CMD_JOIN_REQUEST"
-		case CMD_JOIN_NOTIF:
-			return "CMD_JOIN_NOTIF"
-		case CMD_EXIT_NOTIF:
-			return "CMD_EXIT_NOTIF"
-		case CMD_PING:
-			return "CMD_PING"
-		case CMD_PING_RESPONSE:
-			return "CMD_PING_RESPONSE"
-		case CMD_MESSAGE:
-			return "CMD_MESSAGE"
+	switch c {
+	case CMD_JOIN_REQUEST:
+		return "CMD_JOIN_REQUEST"
+	case CMD_JOIN_NOTIF:
+		return "CMD_JOIN_NOTIF"
+	case CMD_EXIT_NOTIF:
+		return "CMD_EXIT_NOTIF"
+	case CMD_PING:
+		return "CMD_PING"
+	case CMD_PING_RESPONSE:
+		return "CMD_PING_RESPONSE"
+	case CMD_MESSAGE:
+		return "CMD_MESSAGE"
 	}
 	return "INVALID ID"
 }

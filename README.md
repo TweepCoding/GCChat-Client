@@ -1,4 +1,4 @@
-# XChat-Client
+# GCChat-Client
 
 **A chat client using GTK3+, Pure TCP, and Golang**
 
@@ -12,3 +12,7 @@ public for anyone to tinker with.
 There are probably other ways to make a chat client, but I decided to go for the approach I am using
 right now. The code is documented in the best way I can, which is... not really good, but I hope it
 suffices.
+
+
+**TODO:**
+- Fix users being able to join with same username and breaking... things.

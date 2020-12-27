@@ -14,9 +14,15 @@ Connect dials to the server, establishes a connection, keeps a routine to listen
 for incomming commands from the server and returns an error if there is one, else
 it returns nil
 */
+
+const (
+	IP_ADRESS string = ""
+	PORT      string = "9000"
+)
+
 func Connect(window *ui.MainWindow) error {
 
-	conn, err := net.Dial("tcp", ":9000")
+	conn, err := net.Dial("tcp", IP_ADRESS + ":" + PORT)
 
 	if err != nil {
 		return err
